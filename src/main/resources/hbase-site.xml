@@ -22,4 +22,12 @@
         <name>hbase.client.connection.impl</name>
         <value>com.alipay.oceanbase.hbase.util.OHConnectionImpl</value>
     </property>
+    <property>
+        <name>hbase.client.async.connection.impl</name>
+        <value>com.alipay.oceanbase.hbase.util.OHAsyncConnectionImpl</value>
+    </property>
+    <property>
+        <name>hbase.client.registry.impl</name>
+        <value>SimpleRegistry</value>
+    </property>
 </configuration>

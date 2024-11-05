@@ -17,6 +17,8 @@
 
 package com.alipay.oceanbase.hbase;
 
+import com.alipay.oceanbase.hbase.exception.FeatureNotSupportedException;
+import com.alipay.oceanbase.hbase.util.OHAsyncConnectionImpl;
 import com.alipay.oceanbase.hbase.util.OHBufferedMutatorImpl;
 import com.alipay.oceanbase.hbase.util.ObHTableTestUtil;
 import org.apache.hadoop.conf.Configuration;
@@ -59,6 +61,15 @@ public class OHConnectionTest {
     }
 
     @Test
+    public void testAsyncConnection() throws Exception {
+        Configuration c = ObHTableTestUtil.newConfiguration();
+        c.set("rs.list.acquire.read.timeout", "10000");
+        AsyncConnection connection = ConnectionFactory.createAsyncConnection(c).get();
+        Assert.assertNotNull(connection);
+        System.out.println(connection.getConfiguration().get("rs.list.acquire.read.timeout"));
+    }
+
+    @Test
     public void testConnectionByXml() throws Exception {
 
         Configuration c = ObHTableTestUtil.newConfiguration();
@@ -79,10 +90,10 @@ public class OHConnectionTest {
         ((OHTableClient) hTable).refreshTableEntry("family1", true);
     }
 
-    @After
-    public void after() throws IOException {
-        hTable.close();
-    }
+//    @After
+//    public void after() throws IOException {
+//        hTable.close();
+//    }
 
     @Test
     public void testGetTableByTableBuilder() throws Exception {
