@@ -17,9 +17,21 @@
 
 package com.alipay.oceanbase.hbase.util;
 
+import com.alipay.oceanbase.rpc.ObTableClient;
+import com.alipay.oceanbase.rpc.exception.ObTableNotExistException;
+import com.alipay.oceanbase.rpc.mutation.BatchOperation;
 import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Mutation;
+import org.apache.hadoop.hbase.client.Row;
+import org.apache.hadoop.hbase.regionserver.NoSuchColumnFamilyException;
+import org.apache.hadoop.hbase.util.Bytes;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
+import static java.lang.String.format;
 
 @InterfaceAudience.Private
 public class OHBaseFuncUtils {
@@ -37,5 +49,33 @@ public class OHBaseFuncUtils {
         byte[] family = Arrays.copyOfRange(qualifier, 0, familyLen);
         byte[] newQualifier = Arrays.copyOfRange(qualifier, familyLen + 1, qualifier.length);
         return new byte[][] { family, newQualifier };
+    }
+
+    public static void generateBadColumnFamilyException(BatchError batchError, final BatchOperation batch, final List<? extends Row> actions,
+                                                 final ObTableNotExistException ex, final ObTableClient obTableClient,
+                                                 final String realTableName, final String tableNameString) {
+        String badFamily;
+        if (!obTableClient.isTableGroupName(realTableName)) {
+            badFamily = realTableName.split("\\$")[1];
+        } else {
+            String errMsg = ex.getMessage();
+            int start = errMsg.indexOf('\'');
+            int end = errMsg.indexOf( '\'', start + 1);
+            badFamily = errMsg.substring(start + 1, end).split("\\.")[1];
+        }
+        String errMsg = format("Table %s:%s doesn't exist", tableNameString, badFamily);
+        for (Row row : actions) {
+            Set<byte[]> familySet;
+            if (row instanceof Get) {
+                Get get = (Get) row;
+                familySet = get.familySet();
+            } else {
+                Mutation mutation = (Mutation) row;
+                familySet = mutation.getFamilyCellMap().keySet();
+            }
+            if (familySet.contains(Bytes.toBytes(badFamily))) {
+                batchError.add(new NoSuchColumnFamilyException(errMsg), row, null);
+            }
+        }
     }
 }
