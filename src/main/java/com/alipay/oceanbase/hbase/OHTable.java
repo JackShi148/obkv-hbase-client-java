@@ -21,6 +21,8 @@ import com.alipay.oceanbase.hbase.exception.FeatureNotSupportedException;
 import com.alipay.oceanbase.hbase.exception.OperationTimeoutException;
 import com.alipay.oceanbase.hbase.execute.ServerCallable;
 import com.alipay.oceanbase.hbase.filter.HBaseFilterUtils;
+import com.alipay.oceanbase.hbase.metrics.MetricsImporter;
+import com.alipay.oceanbase.hbase.metrics.OHMetrics;
 import com.alipay.oceanbase.hbase.result.ClientStreamScanner;
 import com.alipay.oceanbase.hbase.util.*;
 import com.alipay.oceanbase.rpc.ObGlobal;
@@ -169,7 +171,7 @@ public class OHTable implements Table {
 
     private RegionLocator        regionLocator;
 
-    private final OHMetrics      metrics;
+    private final OHMetrics metrics;
 
     /**
      * Creates an object to access a HBase table.
